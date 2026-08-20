@@ -1,0 +1,104 @@
+/* Custom Styling for Halifax Safe Map */
+
+html, body {
+  height: 100%;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+}
+
+#map-container {
+  height: 100%;
+  width: 100%;
+  min-height: 100%;
+  position: relative;
+  flex: 1;
+}
+
+#map {
+  height: 100% !important;
+  width: 100% !important;
+  min-height: 100% !important;
+  background-color: #0F172A;
+  z-index: 1;
+}
+
+/* Category Filter Button Styles */
+.filter-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  border-radius: 9999px;
+  background-color: #1E293B;
+  color: #CBD5E1;
+  font-size: 12px;
+  font-weight: 600;
+  border: 1px solid #334155;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+  flex-shrink: 0;
+  cursor: pointer;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+}
+
+.filter-btn:hover {
+  background-color: #334155;
+  color: #F8FAFC;
+  border-color: #475569;
+  transform: translateY(-1px);
+}
+
+.filter-btn.active {
+  background-color: #0284C7 !important;
+  color: #FFFFFF !important;
+  border-color: #38BDF8 !important;
+  box-shadow: 0 4px 14px rgba(2, 132, 199, 0.45) !important;
+}
+
+.count-badge {
+  font-size: 10px;
+  font-family: monospace;
+  padding: 2px 6px;
+  border-radius: 9999px;
+  background-color: rgba(15, 23, 42, 0.8);
+  color: #F1F5F9;
+  border: 1px solid #475569;
+  margin-left: 4px;
+}
+
+/* Custom Leaflet Dark Popup Styles */
+.leaflet-popup-content-wrapper {
+  background: #1E293B !important;
+  color: #F8FAFC !important;
+  border: 1px solid #334155 !important;
+  border-radius: 12px !important;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5), 0 8px 10px -6px rgba(0, 0, 0, 0.5) !important;
+  padding: 0 !important;
+}
+
+.leaflet-popup-tip {
+  background: #1E293B !important;
+  border: 1px solid #334155 !important;
+}
+
+.leaflet-popup-content {
+  margin: 12px 14px !important;
+  line-height: 1.4 !important;
+}
+
+.card-selected {
+  border-color: #0284C7 !important;
+  background-color: #1E293B !important;
+  box-shadow: 0 0 15px rgba(2, 132, 199, 0.3) !important;
+}
+
+/* Scrollbar styles */
+.scrollbar-none::-webkit-scrollbar {
+  display: none;
+}
+.scrollbar-none {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}

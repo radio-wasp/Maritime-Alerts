@@ -1,0 +1,16 @@
+services:
+  halifax-fire-map:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: halifax_fire_map_app
+    ports:
+      - "8000:8000"
+    environment:
+      - DB_PATH=/app/data/fire_alerts.db
+    volumes:
+      - fire_data:/app/data
+    restart: unless-stopped
+
+volumes:
+  fire_data:

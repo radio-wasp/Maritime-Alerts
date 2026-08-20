@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Maritime Alerts — Live Emergency & Incident Map</title>
+  
+  <!-- Mobile PWA Meta Tags -->
+  <meta name="theme-color" content="#0F172A" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="Maritime Alerts" />
+  <link rel="apple-touch-icon" href="/static/logo.png" />
+  <link rel="manifest" href="/static/manifest.webmanifest" />
+  <link rel="icon" type="image/png" href="/static/logo.png" />
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            brand: '#0284C7',
+            darkbg: '#0F172A',
+            darkcard: '#1E293B',
+            darkborder: '#334155'
+          }
+        }
+      }
+    }
+  </script>
+  <!-- Leaflet CSS & JS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <link rel="stylesheet" href="/static/styles.css" />
+</head>
+<body class="bg-slate-900 text-slate-100 min-h-screen flex flex-col font-sans antialiased overflow-hidden">
+
+  <!-- Top Header Navigation -->
+  <header class="h-16 bg-slate-900/90 backdrop-blur border-b border-slate-800 px-4 sm:px-6 flex items-center justify-between z-30 shrink-0">
+    <div class="flex items-center gap-3">
+      <img src="/static/logo.png" alt="Maritime Alerts Logo" class="h-10 w-10 rounded-xl object-cover shadow-lg shadow-sky-900/40 border border-slate-700/60" />
+      <div>
+        <h1 class="text-base sm:text-lg font-bold leading-tight tracking-tight flex items-center gap-2">
+          Maritime Alerts <span class="text-xs bg-sky-500/20 text-sky-400 font-mono px-2 py-0.5 rounded-full border border-sky-500/30 uppercase">NS · NB · PEI</span>
+        </h1>
+        <p class="text-xs text-slate-400 font-mono">Dispatches, 511 Traffic & Outages · Maritimes</p>
+      </div>
+    </div>
+
+    <div class="flex items-center gap-2 sm:gap-4">
+      <!-- Region Selector -->
+      <div class="flex items-center gap-1.5 bg-slate-800 border border-slate-700 rounded-lg px-2.5 py-1.5 shadow-sm">
+        <i data-lucide="map-pin" class="w-3.5 h-3.5 text-sky-400"></i>
+        <select id="region-select" class="bg-transparent text-xs font-semibold text-slate-200 focus:outline-none cursor-pointer">
+          <option value="all" class="bg-slate-800">All Maritimes (NS, NB, PEI)</option>
+          <option value="Halifax" class="bg-slate-800">Halifax (HRM)</option>
+          <option value="Moncton" class="bg-slate-800">Moncton / Dieppe (NB)</option>
+          <option value="Saint John" class="bg-slate-800">Saint John (NB)</option>
+          <option value="Fredericton" class="bg-slate-800">Fredericton (NB)</option>
+          <option value="PEI" class="bg-slate-800">Charlottetown & PEI</option>
+          <option value="Cape Breton" class="bg-slate-800">Cape Breton (CBRM)</option>
+          <option value="Annapolis Valley" class="bg-slate-800">Annapolis Valley</option>
+          <option value="South Shore" class="bg-slate-800">South Shore</option>
+          <option value="North Shore" class="bg-slate-800">North Shore</option>
+        </select>
+      </div>
+
+      <!-- Status Badge -->
+      <div class="hidden lg:flex items-center gap-2 px-3 py-1.5 rounded-full bg-slate-800 border border-slate-700 font-mono text-xs text-slate-300">
+        <span class="relative flex h-2 w-2">
+          <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+          <span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+        </span>
+        <span id="refresh-timer">Refreshing in 5:00</span>
+      </div>
+
+      <!-- Manual Refresh Button -->
+      <button id="btn-refresh" class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 text-xs font-semibold transition-all shadow-sm">
+        <i data-lucide="refresh-cw" class="w-3.5 h-3.5" id="refresh-icon"></i>
+        <span class="hidden sm:inline">Refresh</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- Burn Restrictions Banner -->
+  <div id="burn-banner" class="bg-amber-950/80 border-b border-amber-800/50 px-4 py-2 flex items-center justify-between text-xs font-medium text-amber-200 shrink-0">
+    <div class="flex items-center gap-2">
+      <i data-lucide="shield-alert" class="w-4 h-4 text-amber-400 shrink-0"></i>
+      <span id="burn-status-text">Loading Maritime Burn Restrictions...</span>
+    </div>
+    <span class="text-[10px] font-mono opacity-75 hidden sm:inline">Maritime DNRR BurnSafe</span>
+  </div>
+
+  <!-- Category Filter Bar -->
+  <nav class="bg-slate-900/95 border-b border-slate-800 px-4 py-3 flex items-center gap-2.5 overflow-x-auto scrollbar-none z-20 shrink-0 shadow-md">
+    <button class="filter-btn active" data-category="all">
+      All Calls <span id="count-all" class="count-badge">0</span>
+    </button>
+    <button class="filter-btn" data-category="Structure Fire">
+      <span class="w-2.5 h-2.5 rounded-full bg-red-500 inline-block"></span> Structure Fire
+    </button>
+    <button class="filter-btn" data-category="Highway Incident">
+      <span class="w-2.5 h-2.5 rounded-full bg-sky-400 inline-block"></span> 511 Traffic / Hwy
+    </button>
+    <button class="filter-btn" data-category="Power Outage">
+      <span class="w-2.5 h-2.5 rounded-full bg-amber-400 inline-block"></span> Power Outages
+    </button>
+    <button class="filter-btn" data-category="Medical">
+      <span class="w-2.5 h-2.5 rounded-full bg-blue-500 inline-block"></span> Medical
+    </button>
+    <button class="filter-btn" data-category="Rescue">
+      <span class="w-2.5 h-2.5 rounded-full bg-orange-500 inline-block"></span> Rescue / MVC
+    </button>
+    <button class="filter-btn" data-category="Alarm Activation">
+      <span class="w-2.5 h-2.5 rounded-full bg-purple-500 inline-block"></span> Alarms
+    </button>
+    <button class="filter-btn" data-category="Outside Fire">
+      <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 inline-block"></span> Outside Fire
+    </button>
+    <button class="filter-btn" data-category="Hazmat">
+      <span class="w-2.5 h-2.5 rounded-full bg-pink-500 inline-block"></span> Hazmat
+    </button>
+    <button class="filter-btn" data-category="Police Activity">
+      <span class="w-2.5 h-2.5 rounded-full bg-slate-400 inline-block"></span> Police Alerts
+    </button>
+  </nav>
+
+  <!-- Mobile View Toggle Tabs (Visible on small screens) -->
+  <div class="flex md:hidden border-b border-slate-800 bg-slate-950 shrink-0">
+    <button id="tab-map" class="flex-1 py-2 text-center text-xs font-semibold text-sky-400 border-b-2 border-sky-500">Map View</button>
+    <button id="tab-feed" class="flex-1 py-2 text-center text-xs font-semibold text-slate-400">Live Feed</button>
+  </div>
+
+  <!-- Main Content Body (Split Layout: Map + Live Feed Sidebar) -->
+  <main class="flex-1 flex overflow-hidden relative">
+
+    <!-- Interactive Map Container -->
+    <div id="map-container" class="flex-1 h-full w-full relative z-10">
+      <div id="map" class="h-full w-full"></div>
+    </div>
+
+    <!-- Live Feed Sidebar -->
+    <aside id="sidebar" class="w-full md:w-96 lg:w-[420px] bg-slate-900 border-l border-slate-800 flex flex-col h-full z-20 hidden md:flex shrink-0">
+      <div class="p-3 border-b border-slate-800 bg-slate-950/50 flex items-center justify-between font-mono text-xs text-slate-400">
+        <span class="uppercase tracking-wider font-semibold flex items-center gap-2">
+          <img src="/static/logo.png" class="w-4 h-4 rounded" alt="" />
+          Active Incidents (<span id="feed-count">0</span>)
+        </span>
+        <span id="region-label" class="text-sky-400 font-semibold">All Maritimes</span>
+      </div>
+
+      <!-- Feed Cards Scroll Container -->
+      <div id="incident-feed" class="flex-1 overflow-y-auto p-3 space-y-3 scrollbar-thin scrollbar-thumb-slate-700">
+        <div class="text-center py-12 text-slate-500 font-mono text-xs">
+          Loading Maritime dispatches...
+        </div>
+      </div>
+    </aside>
+
+  </main>
+
+  <!-- PWA Service Worker Registration -->
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/static/sw.js')
+          .then(reg => console.log('PWA ServiceWorker registered'))
+          .catch(err => console.log('ServiceWorker registration error:', err));
+      });
+    }
+  </script>
+  <script src="/static/app.js"></script>
+</body>
+</html>
