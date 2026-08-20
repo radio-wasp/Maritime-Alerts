@@ -53,20 +53,31 @@
     </div>
 
     <div class="flex items-center gap-2 sm:gap-4">
-      <!-- Region Selector -->
+      <!-- Province & Region Dropdown Selector -->
       <div class="flex items-center gap-1.5 bg-slate-800 border border-slate-700 rounded-lg px-2.5 py-1.5 shadow-sm">
         <i data-lucide="map-pin" class="w-3.5 h-3.5 text-sky-400"></i>
         <select id="region-select" class="bg-transparent text-xs font-semibold text-slate-200 focus:outline-none cursor-pointer">
           <option value="all" class="bg-slate-800">All Maritimes (NS, NB, PEI)</option>
-          <option value="Halifax" class="bg-slate-800">Halifax (HRM)</option>
-          <option value="Moncton" class="bg-slate-800">Moncton / Dieppe (NB)</option>
-          <option value="Saint John" class="bg-slate-800">Saint John (NB)</option>
-          <option value="Fredericton" class="bg-slate-800">Fredericton (NB)</option>
-          <option value="PEI" class="bg-slate-800">Charlottetown & PEI</option>
-          <option value="Cape Breton" class="bg-slate-800">Cape Breton (CBRM)</option>
-          <option value="Annapolis Valley" class="bg-slate-800">Annapolis Valley</option>
-          <option value="South Shore" class="bg-slate-800">South Shore</option>
-          <option value="North Shore" class="bg-slate-800">North Shore</option>
+          
+          <optgroup label="Nova Scotia (NS)" class="bg-slate-900 text-sky-400 font-bold">
+            <option value="NS" class="bg-slate-800 text-slate-200 font-normal">All Nova Scotia (NS)</option>
+            <option value="Halifax" class="bg-slate-800 text-slate-200 font-normal">Halifax (HRM)</option>
+            <option value="Cape Breton" class="bg-slate-800 text-slate-200 font-normal">Cape Breton (CBRM)</option>
+            <option value="Annapolis Valley" class="bg-slate-800 text-slate-200 font-normal">Annapolis Valley</option>
+            <option value="South Shore" class="bg-slate-800 text-slate-200 font-normal">South Shore</option>
+            <option value="North Shore" class="bg-slate-800 text-slate-200 font-normal">North Shore</option>
+          </optgroup>
+
+          <optgroup label="New Brunswick (NB)" class="bg-slate-900 text-sky-400 font-bold">
+            <option value="NB" class="bg-slate-800 text-slate-200 font-normal">All New Brunswick (NB)</option>
+            <option value="Moncton" class="bg-slate-800 text-slate-200 font-normal">Moncton / Dieppe</option>
+            <option value="Saint John" class="bg-slate-800 text-slate-200 font-normal">Saint John</option>
+            <option value="Fredericton" class="bg-slate-800 text-slate-200 font-normal">Fredericton</option>
+          </optgroup>
+
+          <optgroup label="Prince Edward Island (PEI)" class="bg-slate-900 text-sky-400 font-bold">
+            <option value="PEI" class="bg-slate-800 text-slate-200 font-normal">Prince Edward Island (PEI)</option>
+          </optgroup>
         </select>
       </div>
 

@@ -10,11 +10,13 @@ let refreshCountdown = refreshIntervalSeconds;
 
 const REGION_BOUNDS = {
   "all": { coords: [46.0000, -64.5000], zoom: 7, label: "All Maritimes (NS, NB, PEI)" },
+  "NS": { coords: [45.2000, -63.3000], zoom: 8, label: "Nova Scotia (NS)" },
+  "NB": { coords: [46.5000, -66.3000], zoom: 8, label: "New Brunswick (NB)" },
+  "PEI": { coords: [46.3000, -63.3000], zoom: 9.5, label: "Prince Edward Island (PEI)" },
   "Halifax": { coords: [44.6488, -63.5752], zoom: 11, label: "Halifax (HRM)" },
   "Moncton": { coords: [46.0878, -64.7782], zoom: 11, label: "Moncton / Dieppe (NB)" },
   "Saint John": { coords: [45.2733, -66.0633], zoom: 11, label: "Saint John (NB)" },
   "Fredericton": { coords: [45.9636, -66.6431], zoom: 11, label: "Fredericton (NB)" },
-  "PEI": { coords: [46.2382, -63.1311], zoom: 10, label: "Charlottetown & PEI" },
   "Cape Breton": { coords: [46.1368, -60.1942], zoom: 10, label: "Cape Breton (CBRM)" },
   "Annapolis Valley": { coords: [45.0772, -64.4950], zoom: 10, label: "Annapolis Valley" },
   "South Shore": { coords: [44.3770, -64.5170], zoom: 10, label: "South Shore" },
@@ -143,9 +145,16 @@ function bindEvents() {
 }
 
 function loadData() {
-  const regionParam = activeRegion === "all" ? "all" : activeRegion;
+  let paramKey = "region";
+  let paramVal = activeRegion;
+  
+  if (activeRegion === "NS" || activeRegion === "NB" || activeRegion === "PEI") {
+    paramKey = "province";
+    paramVal = activeRegion === "PEI" ? "PE" : activeRegion;
+  }
+
   Promise.all([
-    fetch(`/api/incidents?region=${encodeURIComponent(regionParam)}`).then(r => r.json()),
+    fetch(`/api/incidents?${paramKey}=${encodeURIComponent(paramVal)}`).then(r => r.json()),
     fetch("/api/burn-status").then(r => r.json())
   ])
   .then(([incidentsRes, burnRes]) => {
