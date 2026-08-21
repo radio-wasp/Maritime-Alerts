@@ -5,8 +5,8 @@ import time
 import re
 from typing import Tuple, Optional, Dict
 
-# Centroids for Maritime communities across Nova Scotia, New Brunswick, and PEI
-MARITIME_COMMUNITY_CENTROIDS: Dict[str, Tuple[float, float]] = {
+# Centroids for Atlantic Canada communities across NS, NB, PEI, and NL
+ATLANTIC_COMMUNITY_CENTROIDS: Dict[str, Tuple[float, float]] = {
     # Nova Scotia (HRM & Counties)
     "halifax": (44.6488, -63.5752),
     "dartmouth": (44.6652, -63.5677),
@@ -47,7 +47,6 @@ MARITIME_COMMUNITY_CENTROIDS: Dict[str, Tuple[float, float]] = {
     "sackville nb": (45.9000, -64.3667),
     "sussex": (45.7230, -65.5070),
     "st. andrews": (45.0740, -67.0540),
-    "woodstock": (46.1520, -67.5750),
 
     # Prince Edward Island (PEI)
     "charlottetown": (46.2382, -63.1311),
@@ -56,7 +55,24 @@ MARITIME_COMMUNITY_CENTROIDS: Dict[str, Tuple[float, float]] = {
     "cornwall": (46.2330, -63.2170),
     "montague": (46.1667, -62.6500),
     "kensington": (46.4333, -63.6333),
-    "souris": (46.3500, -62.2500)
+
+    # Newfoundland & Labrador (NL)
+    "st. john's": (47.5615, -52.7126),
+    "st johns": (47.5615, -52.7126),
+    "mount pearl": (47.5189, -52.7814),
+    "conception bay south": (47.5000, -52.9833),
+    "paradise": (47.5333, -52.8833),
+    "corner brook": (48.9500, -57.9500),
+    "grand falls-windsor": (48.9333, -55.6500),
+    "gander": (48.9569, -54.6089),
+    "labrador city": (52.9461, -66.9114),
+    "happy valley-goose bay": (53.3017, -60.3261),
+    "goose bay": (53.3017, -60.3261),
+    "stephenville": (48.5500, -58.5833),
+    "clarenville": (48.1667, -53.9667),
+    "deer lake": (49.1667, -57.4333),
+    "marystown": (47.1667, -55.1500),
+    "torbay": (47.6667, -52.7333)
 }
 
 # Cache for geocoded queries
@@ -64,7 +80,7 @@ _GEO_CACHE: Dict[str, Tuple[float, float]] = {}
 
 def geocode_location(location_str: str, neighborhood_str: Optional[str] = None) -> Tuple[float, float]:
     """
-    Geocode a Maritime location string to (lat, lng).
+    Geocode an Atlantic Canada location string to (lat, lng).
     Checks cache first, then OpenStreetMap Nominatim, with fallback to community centroids.
     """
     clean_loc = location_str.strip() if location_str else ""
@@ -72,19 +88,19 @@ def geocode_location(location_str: str, neighborhood_str: Optional[str] = None) 
         clean_loc = neighborhood_str.strip()
 
     if not clean_loc:
-        return MARITIME_COMMUNITY_CENTROIDS["halifax"]
+        return ATLANTIC_COMMUNITY_CENTROIDS["halifax"]
 
     cache_key = clean_loc.lower()
     if cache_key in _GEO_CACHE:
         return _GEO_CACHE[cache_key]
 
     # Try community lookup first if simple neighborhood/town matching
-    for comm, coords in MARITIME_COMMUNITY_CENTROIDS.items():
+    for comm, coords in ATLANTIC_COMMUNITY_CENTROIDS.items():
         if comm in cache_key:
             _GEO_CACHE[cache_key] = coords
             return coords
 
-    # Perform Nominatim search restricted to Maritimes
+    # Perform Nominatim search restricted to Atlantic Canada
     query = f"{clean_loc}, Canada"
     headers = {
         "User-Agent": "MaritimeAlertsMapApp/1.0 (community-app)"
@@ -104,8 +120,8 @@ def geocode_location(location_str: str, neighborhood_str: Optional[str] = None) 
                 if data and len(data) > 0:
                     lat = float(data[0]["lat"])
                     lng = float(data[0]["lon"])
-                    # Bounding box check for Maritimes region (NS, NB, PEI)
-                    if 43.2 <= lat <= 48.3 and -69.2 <= lng <= -59.3:
+                    # Bounding box check for Atlantic Canada (NS, NB, PEI, NL)
+                    if 43.2 <= lat <= 60.5 and -69.5 <= lng <= -52.5:
                         _GEO_CACHE[cache_key] = (lat, lng)
                         return (lat, lng)
     except Exception:
@@ -114,12 +130,12 @@ def geocode_location(location_str: str, neighborhood_str: Optional[str] = None) 
     # Secondary lookup using neighborhood/town if detailed query failed
     if neighborhood_str:
         neigh_key = neighborhood_str.lower().strip()
-        for comm, coords in MARITIME_COMMUNITY_CENTROIDS.items():
+        for comm, coords in ATLANTIC_COMMUNITY_CENTROIDS.items():
             if comm in neigh_key:
                 _GEO_CACHE[cache_key] = coords
                 return coords
 
     # Default fallback to Halifax central
-    default_coords = MARITIME_COMMUNITY_CENTROIDS["halifax"]
+    default_coords = ATLANTIC_COMMUNITY_CENTROIDS["halifax"]
     _GEO_CACHE[cache_key] = default_coords
     return default_coords

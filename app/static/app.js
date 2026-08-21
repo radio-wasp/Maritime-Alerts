@@ -1,4 +1,4 @@
-// Maritime Alerts - Interactive Live Map Client Logic
+// Maritime Alerts - Interactive Live Map Client Logic (Atlantic Canada)
 
 let map;
 let markersGroup;
@@ -9,14 +9,18 @@ let refreshIntervalSeconds = 300;
 let refreshCountdown = refreshIntervalSeconds;
 
 const REGION_BOUNDS = {
-  "all": { coords: [46.0000, -64.5000], zoom: 7, label: "All Maritimes (NS, NB, PEI)" },
+  "all": { coords: [47.0000, -60.0000], zoom: 6, label: "All Atlantic Canada (NS, NB, PEI, NL)" },
   "NS": { coords: [45.2000, -63.3000], zoom: 8, label: "Nova Scotia (NS)" },
   "NB": { coords: [46.5000, -66.3000], zoom: 8, label: "New Brunswick (NB)" },
   "PEI": { coords: [46.3000, -63.3000], zoom: 9.5, label: "Prince Edward Island (PEI)" },
+  "NL": { coords: [48.8000, -56.5000], zoom: 6.5, label: "Newfoundland & Labrador (NL)" },
   "Halifax": { coords: [44.6488, -63.5752], zoom: 11, label: "Halifax (HRM)" },
   "Moncton": { coords: [46.0878, -64.7782], zoom: 11, label: "Moncton / Dieppe (NB)" },
   "Saint John": { coords: [45.2733, -66.0633], zoom: 11, label: "Saint John (NB)" },
   "Fredericton": { coords: [45.9636, -66.6431], zoom: 11, label: "Fredericton (NB)" },
+  "St. John's": { coords: [47.5615, -52.7126], zoom: 11, label: "St. John's & Avalon (NL)" },
+  "Corner Brook": { coords: [48.9500, -57.9500], zoom: 11, label: "Corner Brook & West NL" },
+  "Labrador": { coords: [53.3017, -60.3261], zoom: 8, label: "Labrador (Goose Bay)" },
   "Cape Breton": { coords: [46.1368, -60.1942], zoom: 10, label: "Cape Breton (CBRM)" },
   "Annapolis Valley": { coords: [45.0772, -64.4950], zoom: 10, label: "Annapolis Valley" },
   "South Shore": { coords: [44.3770, -64.5170], zoom: 10, label: "South Shore" },
@@ -148,7 +152,7 @@ function loadData() {
   let paramKey = "region";
   let paramVal = activeRegion;
   
-  if (activeRegion === "NS" || activeRegion === "NB" || activeRegion === "PEI") {
+  if (["NS", "NB", "PEI", "NL"].includes(activeRegion)) {
     paramKey = "province";
     paramVal = activeRegion === "PEI" ? "PE" : activeRegion;
   }

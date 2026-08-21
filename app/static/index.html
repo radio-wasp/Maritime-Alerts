@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-  <title>Maritime Alerts — Live Emergency & Incident Map</title>
+  <title>Maritime Alerts — Live Atlantic Canada Emergency Map</title>
   
   <!-- Mobile PWA Meta Tags -->
   <meta name="theme-color" content="#0F172A" />
@@ -46,9 +46,9 @@
       <img src="/static/logo.png" alt="Maritime Alerts Logo" class="h-10 w-10 rounded-xl object-cover shadow-lg shadow-sky-900/40 border border-slate-700/60" />
       <div>
         <h1 class="text-base sm:text-lg font-bold leading-tight tracking-tight flex items-center gap-2">
-          Maritime Alerts <span class="text-xs bg-sky-500/20 text-sky-400 font-mono px-2 py-0.5 rounded-full border border-sky-500/30 uppercase">NS · NB · PEI</span>
+          Maritime Alerts <span class="text-xs bg-sky-500/20 text-sky-400 font-mono px-2 py-0.5 rounded-full border border-sky-500/30 uppercase">Atlantic Canada</span>
         </h1>
-        <p class="text-xs text-slate-400 font-mono">Dispatches, 511 Traffic & Outages · Maritimes</p>
+        <p class="text-xs text-slate-400 font-mono">Dispatches, 511 Traffic & Outages · NS · NB · PEI · NL</p>
       </div>
     </div>
 
@@ -57,7 +57,7 @@
       <div class="flex items-center gap-1.5 bg-slate-800 border border-slate-700 rounded-lg px-2.5 py-1.5 shadow-sm">
         <i data-lucide="map-pin" class="w-3.5 h-3.5 text-sky-400"></i>
         <select id="region-select" class="bg-transparent text-xs font-semibold text-slate-200 focus:outline-none cursor-pointer">
-          <option value="all" class="bg-slate-800">All Maritimes (NS, NB, PEI)</option>
+          <option value="all" class="bg-slate-800">All Atlantic Canada (NS, NB, PEI, NL)</option>
           
           <optgroup label="Nova Scotia (NS)" class="bg-slate-900 text-sky-400 font-bold">
             <option value="NS" class="bg-slate-800 text-slate-200 font-normal">All Nova Scotia (NS)</option>
@@ -77,6 +77,13 @@
 
           <optgroup label="Prince Edward Island (PEI)" class="bg-slate-900 text-sky-400 font-bold">
             <option value="PEI" class="bg-slate-800 text-slate-200 font-normal">Prince Edward Island (PEI)</option>
+          </optgroup>
+
+          <optgroup label="Newfoundland & Labrador (NL)" class="bg-slate-900 text-sky-400 font-bold">
+            <option value="NL" class="bg-slate-800 text-slate-200 font-normal">All Newfoundland & Labrador (NL)</option>
+            <option value="St. John's" class="bg-slate-800 text-slate-200 font-normal">St. John's & Avalon</option>
+            <option value="Corner Brook" class="bg-slate-800 text-slate-200 font-normal">Corner Brook & West NL</option>
+            <option value="Labrador" class="bg-slate-800 text-slate-200 font-normal">Labrador (Goose Bay)</option>
           </optgroup>
         </select>
       </div>
@@ -102,9 +109,9 @@
   <div id="burn-banner" class="bg-amber-950/80 border-b border-amber-800/50 px-4 py-2 flex items-center justify-between text-xs font-medium text-amber-200 shrink-0">
     <div class="flex items-center gap-2">
       <i data-lucide="shield-alert" class="w-4 h-4 text-amber-400 shrink-0"></i>
-      <span id="burn-status-text">Loading Maritime Burn Restrictions...</span>
+      <span id="burn-status-text">Loading Atlantic Burn Restrictions...</span>
     </div>
-    <span class="text-[10px] font-mono opacity-75 hidden sm:inline">Maritime DNRR BurnSafe</span>
+    <span class="text-[10px] font-mono opacity-75 hidden sm:inline">Atlantic DNRR BurnSafe</span>
   </div>
 
   <!-- Category Filter Bar -->
@@ -162,13 +169,13 @@
           <img src="/static/logo.png" class="w-4 h-4 rounded" alt="" />
           Active Incidents (<span id="feed-count">0</span>)
         </span>
-        <span id="region-label" class="text-sky-400 font-semibold">All Maritimes</span>
+        <span id="region-label" class="text-sky-400 font-semibold">All Atlantic Canada</span>
       </div>
 
       <!-- Feed Cards Scroll Container -->
       <div id="incident-feed" class="flex-1 overflow-y-auto p-3 space-y-3 scrollbar-thin scrollbar-thumb-slate-700">
         <div class="text-center py-12 text-slate-500 font-mono text-xs">
-          Loading Maritime dispatches...
+          Loading Atlantic Canada dispatches...
         </div>
       </div>
     </aside>

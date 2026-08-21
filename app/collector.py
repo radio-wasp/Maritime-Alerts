@@ -25,16 +25,16 @@ def categorize_incident(title: str) -> str:
         return "Outside Fire"
     elif any(k in title_lower for k in ["hazmat", "gas leak", "propane", "chemical", "fuel spill", "odor", "odour", "gas"]):
         return "Hazmat"
-    elif any(k in title_lower for k in ["police", "rcmp", "hrp", "investigation"]):
+    elif any(k in title_lower for k in ["police", "rcmp", "rnc", "hrp", "investigation"]):
         return "Police Activity"
     else:
         return "General Fire"
 
 def fetch_hrfe_incidents():
     """
-    Fetch Maritime incident dispatches.
+    Fetch Maritime & Atlantic incident dispatches.
     """
-    print("[Collector] Ingesting Maritime emergency dispatches (NS, NB, PEI)...")
+    print("[Collector] Ingesting Atlantic Canada emergency dispatches (NS, NB, PEI, NL)...")
     
     arcgis_url = "https://services2.arcgis.com/15zgsuwNtx65FuAb/arcgis/rest/services/HRFE_Incident_Initial_Response/FeatureServer/0/query?where=1%3D1&outFields=*&outSR=4326&resultRecordCount=30&f=json"
     headers = {"User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)"}
@@ -93,14 +93,14 @@ def fetch_hrfe_incidents():
     except Exception as e:
         print(f"[Collector] Live API fetch info: {e}")
 
-    # Seed sample incidents across Nova Scotia, New Brunswick, and Prince Edward Island
+    # Seed sample incidents across Nova Scotia, New Brunswick, PEI, and Newfoundland & Labrador
     seed_sample_incidents()
 
 def fetch_burn_restrictions():
     """
-    Fetch Maritime BurnSafe restriction status.
+    Fetch Atlantic BurnSafe restriction status.
     """
-    print("[Collector] Fetching Maritime BurnSafe restriction status...")
+    print("[Collector] Fetching Atlantic BurnSafe restriction status...")
     try:
         import ssl
         ctx = ssl.create_default_context()
@@ -111,18 +111,18 @@ def fetch_burn_restrictions():
         with urllib.request.urlopen(req, context=ctx, timeout=5) as res:
             html = res.read().decode('utf-8', errors='ignore')
             if "No Burning" in html:
-                status = "No Open Burning (Red - Full Restriction across NS, NB & PEI)"
+                status = "No Open Burning (Red - Restriction across Atlantic Canada)"
             elif "Restricted" in html:
-                status = "Restricted Burning (Yellow - 7pm to 8am only across Maritimes)"
+                status = "Restricted Burning (Yellow - 7pm to 8am only across Maritimes & NL)"
             else:
                 status = "Burning Allowed (Green - Permitted 2pm to 8am)"
-            update_burn_restriction(status, "Official Maritime DNRR & Wildfire BurnSafe Map Status")
+            update_burn_restriction(status, "Official Atlantic Canada DNRR & Wildfire BurnSafe Map Status")
     except Exception:
-        update_burn_restriction("Burn Restrictions Active (Check daily 2pm update)", "Daily Nova Scotia, New Brunswick & PEI wildfire prevention rules")
+        update_burn_restriction("Burn Restrictions Active (Check daily 2pm update)", "Daily Nova Scotia, New Brunswick, PEI & Newfoundland wildfire prevention rules")
 
 def seed_sample_incidents():
     """
-    Seed active incidents across Nova Scotia, New Brunswick, and Prince Edward Island.
+    Seed active incidents across Nova Scotia, New Brunswick, PEI, and Newfoundland & Labrador.
     """
     now = datetime.utcnow()
     sample_data = [
@@ -220,32 +220,6 @@ def seed_sample_incidents():
             "minutes_ago": 25,
             "source": "Fredericton Fire Department"
         },
-        {
-            "guid": "maritime-nb-205",
-            "title": "NB Power Outage Alert - Miramichi",
-            "category": "Power Outage",
-            "location": "King George Hwy, Miramichi",
-            "neighborhood": "Miramichi",
-            "region": "North Shore NB",
-            "county": "Northumberland",
-            "province": "NB",
-            "units": 1,
-            "minutes_ago": 33,
-            "source": "NB Power Outages"
-        },
-        {
-            "guid": "maritime-nb-206",
-            "title": "RCMP NB Operation - Bathurst",
-            "category": "Police Activity",
-            "location": "St. Peter Ave, Bathurst",
-            "neighborhood": "Bathurst",
-            "region": "North Shore NB",
-            "county": "Gloucester",
-            "province": "NB",
-            "units": 2,
-            "minutes_ago": 48,
-            "source": "RCMP New Brunswick"
-        },
 
         # --- PRINCE EDWARD ISLAND (PEI) ---
         {
@@ -274,31 +248,85 @@ def seed_sample_incidents():
             "minutes_ago": 13,
             "source": "511 PEI Traffic"
         },
+
+        # --- NEWFOUNDLAND & LABRADOR (NL) ---
         {
-            "guid": "maritime-pe-303",
-            "title": "Outside Brush Fire - Summerside",
-            "category": "Outside Fire",
-            "location": "Water St, Summerside",
-            "neighborhood": "Summerside",
-            "region": "PEI",
-            "county": "Prince",
-            "province": "PE",
-            "units": 2,
-            "minutes_ago": 30,
-            "source": "Summerside Fire Dept"
+            "guid": "maritime-nl-401",
+            "title": "Structure Fire Response - St. John's",
+            "category": "Structure Fire",
+            "location": "Water St, St. John's",
+            "neighborhood": "St. John's",
+            "region": "St. John's",
+            "county": "Avalon",
+            "province": "NL",
+            "units": 6,
+            "minutes_ago": 5,
+            "source": "St. John's Regional Fire (SJRFD)"
         },
         {
-            "guid": "maritime-pe-304",
-            "title": "PEI Maritime Police Advisory - Cornwall",
-            "category": "Police Activity",
-            "location": "Main St, Cornwall",
-            "neighborhood": "Cornwall",
-            "region": "PEI",
-            "county": "Queens",
-            "province": "PE",
+            "guid": "maritime-nl-402",
+            "title": "511 NL Highway Collision - Trans-Canada Hwy 1",
+            "category": "Highway Incident",
+            "location": "Trans-Canada Hwy 1 Near Foxtrap",
+            "neighborhood": "Conception Bay South",
+            "region": "St. John's",
+            "county": "Avalon",
+            "province": "NL",
+            "units": 3,
+            "minutes_ago": 11,
+            "source": "511 Newfoundland"
+        },
+        {
+            "guid": "maritime-nl-403",
+            "title": "Motor Vehicle Rescue - Corner Brook",
+            "category": "Rescue",
+            "location": "Trans-Canada Hwy 1 Near Corner Brook",
+            "neighborhood": "Corner Brook",
+            "region": "Corner Brook",
+            "county": "Humber-St. George's",
+            "province": "NL",
+            "units": 4,
+            "minutes_ago": 21,
+            "source": "Corner Brook Fire Dept"
+        },
+        {
+            "guid": "maritime-nl-404",
+            "title": "Newfoundland Power Outage - Gander",
+            "category": "Power Outage",
+            "location": "Elizabeth Dr, Gander",
+            "neighborhood": "Gander",
+            "region": "NL Central",
+            "county": "Gander",
+            "province": "NL",
             "units": 1,
-            "minutes_ago": 52,
-            "source": "RCMP PEI Division"
+            "minutes_ago": 34,
+            "source": "Newfoundland Power Outages"
+        },
+        {
+            "guid": "maritime-nl-405",
+            "title": "RNC Police Operation - Mount Pearl",
+            "category": "Police Activity",
+            "location": "Topsail Rd, Mount Pearl",
+            "neighborhood": "Mount Pearl",
+            "region": "St. John's",
+            "county": "Avalon",
+            "province": "NL",
+            "units": 2,
+            "minutes_ago": 44,
+            "source": "Royal Newfoundland Constabulary (RNC)"
+        },
+        {
+            "guid": "maritime-nl-406",
+            "title": "Outside Brush Fire - Happy Valley-Goose Bay",
+            "category": "Outside Fire",
+            "location": "Hamilton River Rd, Goose Bay",
+            "neighborhood": "Goose Bay",
+            "region": "Labrador",
+            "county": "Labrador",
+            "province": "NL",
+            "units": 3,
+            "minutes_ago": 58,
+            "source": "Goose Bay Fire Dept"
         }
     ]
 
