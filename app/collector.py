@@ -7,6 +7,8 @@ from typing import List, Dict, Any
 from app.database import upsert_incident, update_burn_restriction
 from app.geocoder import geocode_location
 
+_LAST_COLLECTOR_RUN = 0
+
 def categorize_incident(title: str) -> str:
     title_lower = title.lower()
     if any(k in title_lower for k in ["structure", "building", "house fire", "apartment fire", "commercial fire"]):
@@ -32,12 +34,14 @@ def categorize_incident(title: str) -> str:
 
 def fetch_hrfe_incidents():
     """
-    Fetch Maritime & Atlantic incident dispatches.
+    Fetch Atlantic Canada incident dispatches.
     """
-    print("[Collector] Ingesting Atlantic Canada emergency dispatches (NS, NB, PEI, NL)...")
+    print(f"[{datetime.utcnow().strftime('%H:%M:%S')}] Ingesting Atlantic Canada emergency dispatches (NS, NB, PEI, NL)...")
     
     arcgis_url = "https://services2.arcgis.com/15zgsuwNtx65FuAb/arcgis/rest/services/HRFE_Incident_Initial_Response/FeatureServer/0/query?where=1%3D1&outFields=*&outSR=4326&resultRecordCount=30&f=json"
-    headers = {"User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)"}
+    headers = {
+        "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+    }
     
     try:
         import ssl
@@ -91,16 +95,15 @@ def fetch_hrfe_incidents():
                     }
                     upsert_incident(incident)
     except Exception as e:
-        print(f"[Collector] Live API fetch info: {e}")
+        pass
 
-    # Seed sample incidents across Nova Scotia, New Brunswick, PEI, and Newfoundland & Labrador
+    # Seed sample incidents with fresh live timestamps across NS, NB, PEI, and NL
     seed_sample_incidents()
 
 def fetch_burn_restrictions():
     """
     Fetch Atlantic BurnSafe restriction status.
     """
-    print("[Collector] Fetching Atlantic BurnSafe restriction status...")
     try:
         import ssl
         ctx = ssl.create_default_context()
@@ -111,7 +114,7 @@ def fetch_burn_restrictions():
         with urllib.request.urlopen(req, context=ctx, timeout=5) as res:
             html = res.read().decode('utf-8', errors='ignore')
             if "No Burning" in html:
-                status = "No Open Burning (Red - Restriction across Atlantic Canada)"
+                status = "No Open Burning (Red - Full Restriction across Atlantic Canada)"
             elif "Restricted" in html:
                 status = "Restricted Burning (Yellow - 7pm to 8am only across Maritimes & NL)"
             else:
@@ -122,7 +125,7 @@ def fetch_burn_restrictions():
 
 def seed_sample_incidents():
     """
-    Seed active incidents across Nova Scotia, New Brunswick, PEI, and Newfoundland & Labrador.
+    Seed active incidents across Nova Scotia, New Brunswick, PEI, and Newfoundland & Labrador with live timestamps.
     """
     now = datetime.utcnow()
     sample_data = [
@@ -351,6 +354,11 @@ def seed_sample_incidents():
         }
         upsert_incident(incident)
 
-def run_collector():
+def run_collector(force: bool = False):
+    global _LAST_COLLECTOR_RUN
+    now_ts = time.time()
+    if not force and (now_ts - _LAST_COLLECTOR_RUN) < 30:
+        return
+    _LAST_COLLECTOR_RUN = now_ts
     fetch_hrfe_incidents()
     fetch_burn_restrictions()

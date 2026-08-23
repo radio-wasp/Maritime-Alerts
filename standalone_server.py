@@ -1,16 +1,27 @@
-#!/usr/bin/env python3
 import http.server
 import socketserver
 import json
-import os
-import sqlite3
 import urllib.parse
-from datetime import datetime, timedelta
+import os
+import threading
+import time
 from app.database import init_db, get_incidents, get_burn_restriction
 from app.collector import run_collector
 
 PORT = int(os.getenv("PORT", 8080))
-DB_PATH = "data/fire_alerts.db"
+
+def start_background_poller():
+    def poll_loop():
+        while True:
+            try:
+                run_collector(force=True)
+            except Exception as e:
+                print(f"[BackgroundPoller] Error: {e}")
+            time.sleep(60)
+
+    t = threading.Thread(target=poll_loop, daemon=True)
+    t.start()
+    print("[BackgroundPoller] Started automatic 60s emergency dispatch poller")
 
 class HalifaxSafeHandler(http.server.SimpleHTTPRequestHandler):
     def __init__(self, *args, **kwargs):
@@ -21,7 +32,11 @@ class HalifaxSafeHandler(http.server.SimpleHTTPRequestHandler):
         path = parsed.path
         query = urllib.parse.parse_qs(parsed.query)
 
-        if path == "/api/incidents":
+        if path == "/":
+            self.path = "/index.html"
+            super().do_GET()
+        elif path == "/api/incidents":
+            run_collector()  # Auto-refresh if throttle permits
             category = query.get("category", [None])[0]
             region = query.get("region", [None])[0]
             province = query.get("province", [None])[0]
@@ -40,7 +55,7 @@ class HalifaxSafeHandler(http.server.SimpleHTTPRequestHandler):
 
     def do_POST(self):
         if self.path == "/api/refresh":
-            run_collector()
+            run_collector(force=True)
             self._send_json({"status": "success", "message": "Refreshed Maritime dispatches"})
         else:
             self.send_error(404, "Not Found")
@@ -50,13 +65,15 @@ class HalifaxSafeHandler(http.server.SimpleHTTPRequestHandler):
         self.send_response(200)
         self.send_header("Content-Type", "application/json")
         self.send_header("Access-Control-Allow-Origin", "*")
+        self.send_header("Cache-Control", "no-cache, no-store, must-revalidate")
         self.send_header("Content-Length", str(len(body)))
         self.end_headers()
         self.wfile.write(body)
 
 if __name__ == "__main__":
     init_db()
-    run_collector()
+    run_collector(force=True)
+    start_background_poller()
     socketserver.TCPServer.allow_reuse_address = True
     
     server_started = False
@@ -69,6 +86,3 @@ if __name__ == "__main__":
                 break
         except OSError:
             continue
-            
-    if not server_started:
-        print("Could not bind server to any port in range.")
