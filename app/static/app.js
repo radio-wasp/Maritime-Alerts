@@ -115,15 +115,26 @@ function bindEvents() {
     });
   });
 
-  document.getElementById("btn-refresh").addEventListener("click", () => {
-    const icon = document.getElementById("refresh-icon");
-    icon.classList.add("animate-spin");
-    fetch("/api/refresh", { method: "POST" })
-      .then(() => loadData())
-      .finally(() => {
-        setTimeout(() => icon.classList.remove("animate-spin"), 600);
-      });
-  });
+  const btnRefresh = document.getElementById("btn-refresh");
+  if (btnRefresh) {
+    btnRefresh.addEventListener("click", () => {
+      const icon = btnRefresh.querySelector("svg, i");
+      if (icon) icon.classList.add("animate-spin");
+      refreshCountdown = refreshIntervalSeconds;
+
+      fetch("/api/refresh", { method: "POST" })
+        .then(() => loadData())
+        .catch(err => {
+          console.error("Refresh error:", err);
+          loadData();
+        })
+        .finally(() => {
+          if (icon) {
+            setTimeout(() => icon.classList.remove("animate-spin"), 600);
+          }
+        });
+    });
+  }
 
   const tabMap = document.getElementById("tab-map");
   const tabFeed = document.getElementById("tab-feed");
