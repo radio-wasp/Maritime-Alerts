@@ -36,7 +36,7 @@ class HalifaxSafeHandler(http.server.SimpleHTTPRequestHandler):
             self.path = "/index.html"
             super().do_GET()
         elif path == "/api/incidents":
-            run_collector()  # Auto-refresh if throttle permits
+            # run_collector() removed to prevent blocking API responses
             category = query.get("category", [None])[0]
             region = query.get("region", [None])[0]
             province = query.get("province", [None])[0]

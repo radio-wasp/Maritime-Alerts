@@ -63,24 +63,13 @@ function initMap() {
 
   L.control.zoom({ position: "bottomright" }).addTo(map);
 
-  const cartoTiles = L.tileLayer("https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png", {
-    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/">CARTO</a>',
-    subdomains: 'abcd',
-    maxZoom: 19
-  });
-
-  const osmTiles = L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+  const mapTiles = L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
     attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
-    maxZoom: 19
+    maxZoom: 19,
+    className: 'dark-map-tiles'
   });
 
-  cartoTiles.addTo(map);
-
-  cartoTiles.on('tileerror', function() {
-    if (!map.hasLayer(osmTiles)) {
-      osmTiles.addTo(map);
-    }
-  });
+  mapTiles.addTo(map);
 
   markersGroup = L.layerGroup().addTo(map);
 

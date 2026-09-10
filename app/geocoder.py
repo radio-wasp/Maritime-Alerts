@@ -123,9 +123,13 @@ def geocode_location(location_str: str, neighborhood_str: Optional[str] = None) 
                     # Bounding box check for Atlantic Canada (NS, NB, PEI, NL)
                     if 43.2 <= lat <= 60.5 and -69.5 <= lng <= -52.5:
                         _GEO_CACHE[cache_key] = (lat, lng)
+                        time.sleep(1.1)  # Respect Nominatim rate limits (1 req/s)
                         return (lat, lng)
     except Exception:
         pass
+    finally:
+        # Always sleep after an external Nominatim request to prevent rate limiting
+        time.sleep(1.1)
 
     # Secondary lookup using neighborhood/town if detailed query failed
     if neighborhood_str:

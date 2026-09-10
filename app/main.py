@@ -46,7 +46,7 @@ def read_incidents(
     limit: int = Query(200, ge=1, le=500)
 ):
     try:
-        run_collector()  # Auto-refresh if throttle permits
+        # run_collector() removed to prevent blocking API responses
         incidents = get_incidents(limit=limit, category=category, region=region, province=province)
         return {"status": "success", "count": len(incidents), "data": incidents}
     except Exception as e:
